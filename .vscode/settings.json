@@ -1,6 +1,10 @@
 {
     "sqltools.connections": [
         {
+            "pgOptions": {
+                "idleTimeoutMillis": 0,
+                "connectionTimeoutMillis": 0
+            },
             "previewLimit": 50,
             "server": "localhost",
             "port": 5432,
