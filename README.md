@@ -52,7 +52,7 @@ ensured both were included in the where clause to capture all the jobs in the da
 3. Filtered for role that include the word 'Analyst' and removed those that included the word 'Senior' or 'Sr'
 This is to make it more personal to my needs to reflect the type of roles I will look to apply for myself
 
-4. Joined the company_dim table to note the companies that lsited these job postings
+4. Joined the company_dim table to note the companies that listed these job postings
 
 5. Cast job_posted_date to DATE to remove time stamp so data result can look cleaner
 
