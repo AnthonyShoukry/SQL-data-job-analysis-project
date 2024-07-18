@@ -67,4 +67,3 @@ Visualisation tools like Tableau and Power BI, as well as programming languages 
 In terms of initial thoughts, I would need to ensure that I am able to use the top 3 skills and at least 1 visulisation tool to be able to apply for these roles.
 
 */
-

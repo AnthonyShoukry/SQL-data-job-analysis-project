@@ -1,7 +1,9 @@
 # Introduction
-Welcome to my project, where I explore the exciting world of data jobs! 🚀 I focus on analyst roles, including data analysts, insight analysts, and business analysts 💡. In this project, I explore the UK job market in 2023, making interesting comparisons to remote roles 📊. I dive deep into the top-paying jobs, uncover the most in-demand skills, and provide a comprehensive understanding of the optimal skills required for job seekers. 💼
+Welcome to my project, where I explore the exciting world of data jobs! I focus on analyst roles, including data analysts, insight analysts, and business analysts. In this project, I explore the UK job market in 2023, making interesting comparisons to remote roles. I dive deep into the top-paying jobs, uncover the most in-demand skills, and provide a comprehensive understanding of the optimal skills required for job seekers. 💼
 
 🔍 Interested in the SQL queries?: Check them out [here](/src/)
+
+📊 For access to the CSV files: Click on [here](https://drive.google.com/drive/folders/1egWenKd_r3LRpdCf4SsqTeFZ1ZdY3DNx)
 
 # Background
 As an experienced senior pharmacist transitioning into the world of data, I found it challenging to understand and navigate the job market. Despite having a decade of experience in the healthcare domain, I needed to gain a clearer understanding of the skills required for data roles. This would help me identify which skills to develop and the reasons behind their importance.
@@ -30,13 +32,129 @@ For my exploration of the data job market, I employed a variety of powerful tool
 
 - **Visual Studio Code**: VS Code was my primary code editor for writing and executing SQL queries. This versatile and user-friendly IDE (Integrated Development Environment) offered an excellent workspace for project management. With its extensive range of extensions and features, VS Code streamlined the development process, enabling me to write clean and efficient code and debug errors.
 
+- **PowerBI**: For visualising and presenting insights from the analysed data, I utilised powerBI. This is a very useful tool that enables me to create reports and interactive dashboards to represent key findings. It has an easy to use drag-and-drop interface and rich visulaisation options that I have incorporated within this project to highlight my proficiency with this tool.
+
 - **Git and GitHub**: For version control and collaboration, I relied on Git and GitHub. Git, a distributed version control system, allowed me to track changes, manage different versions of my project, and opens the ability to collaborate with others seamlessly. GitHub, a web-based platform, provided a space to host and share my project publicly. By pushing my code to GitHub, I was able to create this public portfolio showcasing my analysis and findings. This not only enhanced transparency but also facilitated potential collaboration and feedback from the data science community.
 
 Each of these tools contributed significantly to the success of my project, enabling me to efficiently handle the data, perform in-depth analysis, and share my findings with a broader audience. The combination of these technologies ensured a smooth workflow and helped me achieve my project goals effectively.
 
+# Data exploration 
+
+Before starting the project, it was crucial to review the available data to understand the relationships between the datasets. Additionally, conducting necessary data cleansing was essential to ensure cleaner code and facilitate easier manipulation of data in later stages of the analysis.
+
+It is important to note that the dataset does not specify the currency for the listed salaries. However, since the dataset is sourced from an American resource, we can reasonably assume that the currency is USD. Consequently, the salaries listed for UK jobs will depend on the exchange rate, which at the time of writing is approximately 1 USD = 0.77 GBP. This means that about 77% of the listed salary would be the equivalent take-home pay in GBP.
+
+Upon reviewing the initial dataset, a comparison of job title versus job title short revealed discrepancies in the number of data analyst positions and other roles returned. It was important to decide which version of the job titles to use when filtering in the WHERE clause for future queries, as this choice would affect the number of jobs analysed per job title.
+```sql
+SELECT
+    job_title_short,
+    COUNT(*) AS job_count,
+    ROUND(AVG(salary_year_avg),0) AS avg_salary
+FROM
+    job_postings_fact
+WHERE
+    (job_location LIKE '%UK%' OR job_location LIKE '%United Kingdom%') AND
+    salary_year_avg IS NOT NULL AND
+    job_title LIKE '%Analyst%' AND 
+    job_title NOT LIKE '%Senior%' AND
+    job_title NOT LIKE '%Sr%'
+GROUP BY
+    job_title_short
+ORDER BY 
+    avg_salary DESC
+    
+SELECT
+    job_title_short,
+    COUNT(*) AS job_count,
+    ROUND(AVG(salary_year_avg),0) AS avg_salary
+FROM
+    job_postings_fact
+WHERE
+    (job_location LIKE '%UK%' OR job_location LIKE '%United Kingdom%') AND
+    salary_year_avg IS NOT NULL AND
+    job_title_short LIKE '%Analyst%' AND 
+    job_title_short NOT LIKE '%Senior%' AND
+    job_title_short NOT LIKE '%Sr%'
+GROUP BY
+    job_title_short
+ORDER BY 
+    avg_salary DESC
+```
+
+To differentiate between job titles and job title short, I modified the WHERE clause to display only the results that differed between the two searches, as shown below.
+
+```sql
+SELECT
+    job_title_short,
+    job_title
+FROM
+    job_postings_fact
+WHERE
+    (job_location LIKE '%UK%' OR job_location LIKE '%United Kingdom%') AND
+    salary_year_avg IS NOT NULL AND
+    job_title_short LIKE '%Analyst%' AND 
+    job_title NOT LIKE '%Analyst%' AND
+    job_title NOT LIKE '%Senior%' AND
+    job_title NOT LIKE '%Sr%'
+GROUP BY
+    job_title_short, job_title
+```
+This search revealed 17 discrepancies between job titles and their abbreviations. As seen in the table below, many job titles have been incorrectly summarised as data analyst roles, for example.
+
+| Job Title Short     | Job Title                                      |
+|---------------------|------------------------------------------------|
+| Business Analyst    | Business Intelligence Specialist               |
+| Data Analyst        | Analytics Engineer - ENA London, Warsaw- (F/M) |
+| Data Analyst        | Data Architect                                 |
+| Data Analyst        | Data Architect - Trading and Supply            |
+| Data Analyst        | Data Product Manager                           |
+| Data Analyst        | Data Quality Associate                         |
+| Data Analyst        | Data Strategy Partner                          |
+| Data Analyst        | Finance Data Analytics Manager                 |
+| Data Analyst        | Global IT Data Analytics Solutions Expert      |
+| Data Analyst        | Research Engineer, Science                     |
+| Data Analyst        | Research Scientist - (12 month FTC)            |
+| Data Analyst        | Research Scientist, Science                    |
+| Data Analyst        | Sales Insight and Data Manager                 |
+| Data Analyst        | Working student - Measurement Assets and Data Management |
+| Senior Data Analyst | Data Operations Account Director               |
+
+
+Consequently, I decided it was more reliable to use the full job title in the WHERE clause for filtering jobs. However, I used the job title short in the SELECT statement to keep the results concise.
+
+The average salary of the 17 excluded jobs is around 116k, which could have significantly influenced the average salaries used in later queries if they were included in the job postings analysed in this project.
+
+| Job Title Short     | Job Count | Average Salary |
+|---------------------|-----------|----------------|
+| Data Analyst        | 15        | 121,488        |
+| Senior Data Analyst | 1         | 105,300        |
+| Business Analyst    | 1         | 57,600         |
+
+
+
+Below is a the table listing the jobs included in the analysis, along with key metrics that aid in reviewing the distribution of job salaries to identify outliers, which can significantly impact the analysis.
+To visualise this data, I created a boxplot in PowerBI using a line and stacked column chart. 
+
+| job_title_short   | job_count | avg_salary | min_salary | max_salary | median | q25     | q75     |
+|-------------------|-----------|------------|------------|------------|--------|---------|---------|
+| Software Engineer | 1         | 89100      | 89100      | 89100      | 89100  | 89100   | 89100   |
+| Data Analyst      | 53        | 78642      | 30000      | 180000     | 75550  | 53014   | 100500  |
+| Data Scientist    | 6         | 76273      | 56700      | 89100      | 76875  | 70696.9 | 86308.5 |
+| Business Analyst  | 2         | 51750      | 30000      | 73500      | 51750  | 40875   | 62625   |
+
+
+![boxplot](/assests/boxplot.jpg)
+
+The dataset provided highlights significant salary disparities among Data Analysts and Data Scientists, but additional context is needed, especially considering job postings in the UK. Despite the limited data, it's evident that the maximum salary for Data Analysts surpasses the 75th percentile by a substantial margin, suggesting that a minority of Data Analysts command exceptionally high incomes compared to their peers. This observation underscores the high earning potential within this field which may be due to multiple variables such as experience or skills. 
+
+Conversely, the dataset for Data Scientists is too small to draw definitive conclusions. However, even with only 6 data points, there is noticeable variability in salaries. The proximity of the interquartile range to the maximum salary indicates that some Data Scientists may be earning significantly below the typical range observed. A more comprehensive dataset would be necessary to accurately assess the salary distribution for Data Scientists.
+
+In summary, while the data highlighted outliers and variability in salaries for both roles, a broader dataset specific to UK job postings would haved provided a clearer picture of salary trends and distributions within these professions.
+
+
 # The Analysis
 Each objective for this project was designed to investigate specific aspects of the job market data.
-In this section I will outline how I approached each objecttive. 
+In this section I will outline how I approached each objective. 
 
 ## 1. **Analyse** the top-paying data roles in the UK job market
 
@@ -85,19 +203,26 @@ LIMIT 50;
 
 1. **Variability in salaries**:
 
-The highest-paying job had an average annual salary of £180,000. This is significantly higher than the other roles listed, indicating a possible specialisation or seniority that commands a premium. The difference between this highest salary and the lowest within the top 50 jobs was around £130'000 suggesting that even within the top jobs, there can be quite a distinction between compensation for the skills provided.
+The highest-paying job had an average annual salary of 180,000. This is significantly higher than the other roles listed, indicating a possible specialisation or seniority that commands a premium. The difference between this highest salary and the lowest within the top 50 jobs was around 130'000 suggesting that even within the top jobs, there can be quite a distinction between compensation for the skills provided.
+
+The graphic below, created on powerBI shows the job titles of jobs with an average salary greater than or equal to 100k.
 
 2. **Salary Concentration and Distribution**:
 
-Many of the top-paying jobs are clustered around the average of the £100,500 mark within these top jobs. Roles such as "Data Analyst" in various companies and locations (e.g., London, Sheffield, Glasgow) often offer this salary, suggesting a potential standard market rate for experienced data analysts across different industries and locations.
+Many of the top-paying jobs are clustered around the average of the 100,500 mark within these top jobs. Roles such as "Data Analyst" in various companies and locations (e.g., London, Sheffield, Glasgow) often offer this salary, suggesting a potential standard market rate for experienced data analysts across different industries and locations.
 
 3. **Geographical and Industry Spread**:
 
 High-paying data jobs are distributed across various locations in the UK, including London, Newcastle, Stockport, and Edinburgh. While London hosts the majority of these roles, significant opportunities exist outside the capital, indicating a robust demand for data professionals nationwide. It is worth noting the wide range of job titles that accomponied the job postings for similar salary roles. Companies from diverse sectors, such as financial services (e.g., Version 1, Ocorian), insurance (e.g., esure Group), and media (e.g., The Telegraph), are offering competitive salaries, showing the need for data expertise across all industries.
 
+This is neatly summarised onto a geographical map view to help visualise the spread and concentration of these top 50 paying jobs around the UK.
+
+![map of jobs](/assests/mapjobspreads.jpg)
+
+
 ## 2. **Define** the essential skills required for these high-paying roles
 
-Following on from previous query, I began looking at the top paying skills required to meet the top  jobs within the UK that fit my data analyst criteria so i can begin to look at where my skillset would match and what further skills I require.
+Following on from previous query, I began looking at the top paying skills required to meet the top jobs within the UK that fit my data analyst criteria so i can begin to look at where my skillset would match and what further skills I require.
 
 ### To do this I went through the following steps
 
@@ -106,10 +231,11 @@ The other fields were no longer required since I am focusing in on specifics fro
 
 2. Created a CTE to be able to join this to another table - namely the skills associated to these top 50 paying roles
 
-3. Inner join used to connect the skills_job_dim table to the CTE created (connected on job_id)
-Then another inner join used to connect the skills_dim table to that (connected on skill_id)
+3. INNER JOIN used to connect the skills_job_dim table to the CTE created (connected on job_id).
+Then another INNER JOIN used to connect the skills_dim table to that (connected on skill_id).
+The reason I used an INNER JOIN in this case over the LEFT JOIN in the previous query was to return only the rows that matched in both tables. This meant I could exclude rows that did not have a corresponding match between the tables joined on job_id and on skill_id.
 
-4. Although data was naturally in order, added an order_by to ensure it is ordered by salary
+4. Although data was naturally in order, added an ORDER BY to ensure it is ordered by salary
 
 5. Analysis of the results showed the following:
 
@@ -161,9 +287,11 @@ The analysis of the skill column from the top 50 analyst roles in job postings f
 9. **BigQuery**: 4 mentions
 10. **VBA**: 4 mentions
 
-I used Excel to creat a visualisation chart below for easier analysis of the most frequently mentioned skills. 
+I used powerBI to creat a visualisation chart below for easier analysis of the most frequently mentioned skills. 
 
-![Most listed skills within the top 50 jobs](assests\skill_count_for_top_paying_jobs.png)
+Note that not all skills are visualised as some were only mentioned once, however this chart presents those most frequently mentioned.
+
+![Most listed skills within the top 50 jobs](/assests/numberofmentionsperskill.jpg)
 
 
 ### Key insights:
@@ -310,8 +438,7 @@ To find the average of the salaries in the UK verses remote jobs it was better t
 ```sql
 SELECT
     CASE
-        WHEN job_location LIKE '%UK%' THEN 'UK'
-        WHEN job_location LIKE '%United Kingdom%' THEN 'UK'
+        WHEN job_location LIKE '%UK%' OR job_location LIKE '%United Kingdom%' THEN 'UK'
         ELSE job_location
     END AS grouped_location,
     ROUND(AVG(salary_year_avg), 0) AS avg_salary
