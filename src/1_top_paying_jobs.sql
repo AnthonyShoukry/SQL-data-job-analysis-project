@@ -43,3 +43,4 @@ This is to make it more personal to my needs to reflect the type of roles I will
 
 6. Limited results to the top 50 jobs.
 */
+
